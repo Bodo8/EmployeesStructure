@@ -1,0 +1,31 @@
+﻿namespace EmployeesStructure.Migrations
+{
+    using System;
+    using System.Data.Entity.Migrations;
+    
+    public partial class InitialCreate : DbMigration
+    {
+        public override void Up()
+        {
+            CreateTable(
+                "dbo.Employees",
+                c => new
+                    {
+                        Id = c.Int(nullable: false, identity: true),
+                        Name = c.String(nullable: false, maxLength: 100),
+                        SuperiorId = c.Int(),
+                    })
+                .PrimaryKey(t => t.Id)
+                .ForeignKey("dbo.Employees", t => t.SuperiorId)
+                .Index(t => t.SuperiorId);
+            
+        }
+        
+        public override void Down()
+        {
+            DropForeignKey("dbo.Employees", "SuperiorId", "dbo.Employees");
+            DropIndex("dbo.Employees", new[] { "SuperiorId" });
+            DropTable("dbo.Employees");
+        }
+    }
+}

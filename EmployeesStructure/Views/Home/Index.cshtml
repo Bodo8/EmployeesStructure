@@ -1,0 +1,70 @@
+﻿<main>
+    <section class="row" aria-labelledby="aspnetTitle">
+        <h1 id="aspnetTitle">@ViewBag.Title</h1>
+    </section>
+    <div class="row">
+        <div class="col-6" aria-labelledby="gettingStartedTitle">
+            <div class="card">
+                <h5 class="card-title">
+                    <strong>
+                        Rozwiązanie 1.  Pozwala na określenie czy dany pracownik jest
+                        przełożonym dowolnego rzędu dla drugiego pracownika oraz przechowywuje liczbę tego
+                        rzędu.
+                    </strong>
+                </h5>
+                <div class="card-body">
+                    <p class="card-text">
+                        W zakłądce API można zobaczyć Employee endpointy i parametry Url.
+                        Aplikacja ma DBSeeder i wgrane kilku pracowników i ich relacje.
+                    </p>
+                    <p class="card-text">
+                        Logika aplikacji jest w klasie EmployeeHierarchyService, testy do niej w projekcie testowym: klasa EmployeeHierarchyServiceTests.
+                    </p>
+                    <p class="card-text">
+                        (Ewentualny update Employee, należy zabezpieczyć przed ustawieniem
+                        pracownika C jako zwierzchnika dla pracownika X, kiedy C ma jako zwierzchnika pracownika X )
+                    </p>
+                    <p class="card-text">
+                        Poprzez Postmana można testować rozwizanie:
+                        przykładowy request:
+                        <strong>https://localhost:44367/hierarchy/GetSuperiorRowOfEmployee?employeeId=3&superiorId=1</strong>
+                    </p>
+                    <p class="card-text">
+                        <div class="row">
+                            powinien zwrócić:
+                        </div>
+
+                        <div class="row">
+                            employeeId	3
+                        </div>
+                        <div class="row">
+                            superiorId	1
+                        </div>
+                        <div class="row">
+                            row	1
+                        </div>
+                        <div class="row">
+                            isSuperior	true
+                        </div>
+                    </p>
+                </div>
+            </div>
+        </div>
+            <div class="col-4">
+                <div class="card">
+                    <div class="card-body">
+                        <p class="card-text">
+                            (W rozwiązaniu dla firmy powyżej 1 tys. pracowników należało by zmienić wzorzec projektowy na Materialized Path Pattern, dodać optymalizacje
+                            wydajnościwe, w Employee dodać pola string HierarchyPat w którym przechowywana by była
+                            Cała ścieżka w jednej kolumnie "/1/2/4/" i pole: int HierarchyLevel przechowywało by
+                            Poziom w hierarchii (0 = CEO, 1 = pierwszy poziom, itd.) można by wykorzystać MemoryCache,
+                            Rekurencja w bazie danych, nie w C#, indexy na polach HierarchyPath, HierarchyLevel.
+                            Dla bardzo dużych firm powyżej 50 tys. pracowników:
+                            Redis Cache zamiast MemoryCache, Read Replicas - osobna baza do odczytów,
+                            Partycjonowanie - dzielenie tabeli po działach)
+                        </p>
+                    </div>
+                </div>
+            </div>
+    </div>
+</main>
