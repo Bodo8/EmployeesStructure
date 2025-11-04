@@ -4,9 +4,9 @@ using System.Data.Entity;
 
 namespace EmployeesStructure.Data
 {
-    public class DbInitializer : DropCreateDatabaseIfModelChanges<EmployeeContext>
+    public class DbInitializer : DropCreateDatabaseIfModelChanges<DataBaseContext>
     {
-        protected override void Seed(EmployeeContext context)
+        protected override void Seed(DataBaseContext context)
         {
             var employees = new List<Employee>
             {
