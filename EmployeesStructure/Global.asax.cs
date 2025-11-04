@@ -12,6 +12,7 @@ namespace EmployeesStructure
         protected void Application_Start()
         {
             AreaRegistration.RegisterAllAreas();
+            UnityConfig.RegisterTypes(UnityConfig.Container);
             GlobalConfiguration.Configure(WebApiConfig.Register);
             FilterConfig.RegisterGlobalFilters(GlobalFilters.Filters);
             RouteConfig.RegisterRoutes(RouteTable.Routes);
@@ -19,7 +20,7 @@ namespace EmployeesStructure
 
             Database.SetInitializer(new DbInitializer());
 
-            using (var context = new EmployeeContext())
+            using (var context = new DataBaseContext())
             {
                 context.Database.Initialize(force: true);
             }

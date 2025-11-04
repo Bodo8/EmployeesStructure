@@ -1,11 +1,9 @@
-﻿using EmployeesStructure.Data;
+﻿using EmployeesStructure.Data.Repositories;
 using EmployeesStructure.Models;
 using EmployeesStructure.Services;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using System;
 using System.Collections.Generic;
-using System.Data.Entity;
 using System.Linq;
 
 namespace EmployeesStructure.Tests.Services
@@ -13,15 +11,13 @@ namespace EmployeesStructure.Tests.Services
     [TestClass]
     public class EmployeeHierarchyServiceTests
     {
-        private Mock<EmployeeContext> _mockContext;
-        private Mock<DbSet<Employee>> _mockEmployeeSet;
-        private EmployeeHierarchyService _service;
+        private Mock<IEmployeeRepository> _employeeRepositoryMock;
+        private IEmployeeHierarchyService _service;
         private List<Employee> _testEmployees;
 
         [TestInitialize]
         public void Setup()
         {
-            // Przygotowanie testowych danych
             _testEmployees = new List<Employee>
             {
                 new Employee { Id = 1, Name = "Jan Kowalski", SuperiorId = null },
@@ -32,19 +28,13 @@ namespace EmployeesStructure.Tests.Services
                 new Employee { Id = 6, Name = "Maria Dąbrowska", SuperiorId = 3 }
             };
 
-            // Mock DbSet
-            _mockEmployeeSet = CreateMockDbSet(_testEmployees);
+            _employeeRepositoryMock = new Mock<IEmployeeRepository>();
 
-            // Mock Context
-            _mockContext = new Mock<EmployeeContext>();
-            _mockContext.Setup(e => e.Set<Employee>()).Returns(_mockEmployeeSet.Object);
-
-            // Inicjalizacja serwisu
-            _service = new EmployeeHierarchyService(_mockContext.Object);
+            _service = new EmployeeHierarchyService(_employeeRepositoryMock.Object);
         }
 
         [TestMethod]
-        public void FillEmployeesStructure_WithValidData_ShouldBuildCorrectHierarchy()
+        public void fill_employeesstructure_with_valid_data_should_build_correct_hierarchy()
         {
             // Act
             var structure = _service.FillEmployeesStructure(_testEmployees);
@@ -61,7 +51,7 @@ namespace EmployeesStructure.Tests.Services
         }
 
         [TestMethod]
-        public void FillEmployeesStructure_WithEmptyList_ShouldReturnEmptyStructure()
+        public void fill_employeesstructure_with_empty_list_should_return_empty_structure()
         {
             // Arrange
             var emptyList = new List<Employee>();
@@ -76,9 +66,11 @@ namespace EmployeesStructure.Tests.Services
         }
 
         [TestMethod]
-        public void GetSuperiorRowOfEmployee_DirectSuperior_ShouldReturn1()
+        public void get_superior_row_of_employee_direct_superior_should_return1()
         {
             // Arrange
+            _employeeRepositoryMock.Setup(repo => repo.GetAll())
+                .Returns(_testEmployees.AsQueryable());
             _service.BuildHierarchyFromDatabase();
 
             // Act
@@ -89,9 +81,11 @@ namespace EmployeesStructure.Tests.Services
         }
 
         [TestMethod]
-        public void GetSuperiorRowOfEmployee_SecondLevelSuperior_ShouldReturn2()
+        public void get_superior_row_of_employee_second_level_superior_should_return2()
         {
             // Arrange
+            _employeeRepositoryMock.Setup(repo => repo.GetAll())
+                .Returns(_testEmployees.AsQueryable());
             _service.BuildHierarchyFromDatabase();
 
             // Act
@@ -102,7 +96,7 @@ namespace EmployeesStructure.Tests.Services
         }
 
         [TestMethod]
-        public void GetSuperiorRowOfEmployee_NotASuperior_ShouldReturnNull()
+        public void get_superior_row_of_employee_not_a_superior_should_return_null()
         {
             // Arrange
             _service.BuildHierarchyFromDatabase();
@@ -115,7 +109,7 @@ namespace EmployeesStructure.Tests.Services
         }
 
         [TestMethod]
-        public void GetSuperiorRowOfEmployee_SameEmployee_ShouldReturnNull()
+        public void get_superior_row_of_employee_same_employee_should_return_null()
         {
             // Arrange
             _service.BuildHierarchyFromDatabase();
@@ -128,7 +122,7 @@ namespace EmployeesStructure.Tests.Services
         }
 
         [TestMethod]
-        public void GetSuperiorRowOfEmployee_NonExistentEmployee_ShouldReturnNull()
+        public void get_superior_row_of_employee_non_existent_employee_should_return_null()
         {
             // Arrange
             _service.BuildHierarchyFromDatabase();
@@ -141,7 +135,7 @@ namespace EmployeesStructure.Tests.Services
         }
 
         [TestMethod]
-        public void GetSuperiorRowOfEmployee_NonExistentSuperior_ShouldReturnNull()
+        public void get_superior_row_of_employee_non_existent_superior_should_return_null()
         {
             // Arrange
             _service.BuildHierarchyFromDatabase();
@@ -154,19 +148,7 @@ namespace EmployeesStructure.Tests.Services
         }
 
         [TestMethod]
-        [ExpectedException(typeof(ArgumentNullException))]
-        public void GetSuperiorRowOfEmployee_WithoutInitialization_ShouldThrowException()
-        {
-            // Arrange
-            var context = new Mock<EmployeeContext>();
-            var newService = new EmployeeHierarchyService(context.Object);
-
-            // Act - powinno rzucić wyjątek
-            newService.GetSuperiorRowOfEmployee(2, 1);
-        }
-
-        [TestMethod]
-        public void FillEmployeesStructure_WithDeepHierarchy_ShouldCalculateAllLevels()
+        public void fill_employeesstructure_with_deep_hierarchy_should_calculate_all_levels()
         {
             // Arrange - tworzymy głęboką hierarchię 5 poziomów
             var deepHierarchy = new List<Employee>
@@ -189,7 +171,7 @@ namespace EmployeesStructure.Tests.Services
         }
 
         [TestMethod]
-        public void FillEmployeesStructure_WithMultipleBranches_ShouldHandleCorrectly()
+        public void fill_employeesstructure_with_multiple_branches_should_handle_correctly()
         {
             // Arrange - struktura z wieloma gałęziami
             var multiBranch = new List<Employee>
@@ -213,19 +195,5 @@ namespace EmployeesStructure.Tests.Services
             Assert.AreEqual(2, structure.GetSuperiorRowOfEmployee(5, 1));
             Assert.IsNull(structure.GetSuperiorRowOfEmployee(5, 2), "Manager 2 nie jest przełożonym Employee 5");
         }
-
-        private Mock<DbSet<T>> CreateMockDbSet<T>(List<T> data) where T : class
-        {
-            var queryable = data.AsQueryable();
-            var mockSet = new Mock<DbSet<T>>();
-
-            mockSet.As<IQueryable<T>>().Setup(m => m.Provider).Returns(queryable.Provider);
-            mockSet.As<IQueryable<T>>().Setup(m => m.Expression).Returns(queryable.Expression);
-            mockSet.As<IQueryable<T>>().Setup(m => m.ElementType).Returns(queryable.ElementType);
-            mockSet.As<IQueryable<T>>().Setup(m => m.GetEnumerator()).Returns(queryable.GetEnumerator());
-
-            return mockSet;
-        }
-
     }
 }

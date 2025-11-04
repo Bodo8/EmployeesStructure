@@ -1,6 +1,7 @@
-﻿using EmployeesStructure.Data;
+﻿using EmployeesStructure.Data.Repositories;
 using EmployeesStructure.Models;
 using EmployeesStructure.Services;
+using System;
 using System.Linq;
 using System.Web.Http;
 
@@ -8,17 +9,26 @@ namespace EmployeesStructure.Controllers
 {
     public class EmployeeController : ApiController
     {
-        private readonly EmployeeContext _context;
+        private readonly IEmployeeRepository _employeeRepository;
         private readonly IEmployeeHierarchyService _hierarchyService;
+        private readonly IVacationRepository _vacationRepository;
+        private readonly IEmployeeVacationService _employeeVacationService;
 
-        public EmployeeController()
+        public EmployeeController(
+            IEmployeeRepository employeeRepository,
+            IEmployeeHierarchyService hierarchyService,
+            IVacationRepository vacationRepository,
+            IEmployeeVacationService employeeVacationService
+            )
         {
-            _context = new EmployeeContext();
-            _hierarchyService = new EmployeeHierarchyService(_context);
+            _employeeRepository = employeeRepository;
+            _hierarchyService = hierarchyService;
+            _vacationRepository = vacationRepository;
+            _employeeVacationService = employeeVacationService;
         }
 
         [HttpGet]
-        [Route("hierarchy/GetSuperiorRowOfEmployee")]
+        [Route("api/GetSuperiorRowOfEmployee")]
         public IHttpActionResult GetSuperiorRowOfEmployee(int employeeId, int superiorId)
         {
             if (employeeId == 0 || superiorId == 0 || employeeId == superiorId)
@@ -38,7 +48,7 @@ namespace EmployeesStructure.Controllers
         }
 
         [HttpPost]
-        [Route("CreateEmployee")]
+        [Route("api/CreateEmployee")]
         public IHttpActionResult CreateEmployee(Employee employee)
         {
             if (!ModelState.IsValid)
@@ -46,28 +56,63 @@ namespace EmployeesStructure.Controllers
                 return BadRequest(ModelState);
             }
 
-            var superior = _context.Employees.FirstOrDefault(e => e.Id == employee.SuperiorId);
+            var superior = _employeeRepository.GetSuperiorById(employee.SuperiorId ?? 0)
+                .Count();
 
-            if (superior == null)
+            if (superior != 1)
             {
                 return BadRequest($"The specified SuperiorId: {employee.SuperiorId} does not exist.");
             }
 
-            _context.Employees.Add(employee);
-            _context.SaveChanges();
+            _employeeRepository.Add(employee);
+            _employeeRepository.Save();
 
             _hierarchyService.BuildHierarchyFromDatabase();
 
             return Ok(employee.Id);
         }
 
-        protected override void Dispose(bool disposing)
+        [HttpGet]
+        [Route("api/CountFreeDaysForEmployee")]
+        public IHttpActionResult CountFreeDaysForEmployee(int employeeId)
         {
-            if (disposing)
+            var employee = _employeeRepository.GetByIdEager(employeeId);
+
+            if (employee == null)
             {
-                _context.Dispose();
+                return BadRequest($"Employee with Id: {employeeId} does not exist.");
             }
-            base.Dispose(disposing);
+
+            var today = DateTime.Today;
+            var vacations = _vacationRepository.GetEmployeeVacationStats(employee.Id, today);
+            var freeDays = _employeeVacationService.CountFreeDaysForEmployee(employee, vacations, employee.VacationPackage);
+
+            return Ok(new
+            {
+                employeeId,
+                freeDays
+            });
+        }
+
+        [HttpGet]
+        [Route("api/IfEmployeeCanRequestVacation")]
+        public IHttpActionResult IfEmployeeCanRequestVacation(int employeeId)
+        {
+            var employee = _employeeRepository.GetByIdEager(employeeId);
+
+            if (employee == null)
+            {
+                return BadRequest($"Employee with Id: {employeeId} does not exist.");
+            }
+
+            var today = DateTime.Today;
+            var vacations = _vacationRepository.GetEmployeeVacationStats(employee.Id, today);
+            bool canRequestVacation = _employeeVacationService.IfEmployeeCanRequestVacation(employee, vacations, employee.VacationPackage);
+
+            return Ok(new
+            {
+                canRequestVacation
+            });
         }
     }
 }

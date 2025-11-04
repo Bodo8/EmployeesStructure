@@ -1,4 +1,4 @@
-﻿using EmployeesStructure.Data;
+﻿using EmployeesStructure.Data.Repositories;
 using EmployeesStructure.Models;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,12 +7,12 @@ namespace EmployeesStructure.Services
 {
     public class EmployeeHierarchyService : IEmployeeHierarchyService
     {
-        private readonly EmployeeContext _context;
+        private readonly IEmployeeRepository _employeeRepository;
         private EmployeeStructures _employeeStructures;
 
-        public EmployeeHierarchyService(EmployeeContext context)
+        public EmployeeHierarchyService(IEmployeeRepository employeeRepository)
         {
-            _context = context;
+            _employeeRepository = employeeRepository;
         }
 
         public int? GetSuperiorRowOfEmployee(int employeeId, int superiorId)
@@ -27,7 +27,7 @@ namespace EmployeesStructure.Services
 
         public EmployeeStructures BuildHierarchyFromDatabase()
         {
-            var employees = _context.Employees
+            var employees = _employeeRepository.GetAll()
                 .ToList();
             _employeeStructures = FillEmployeesStructure(employees);
 

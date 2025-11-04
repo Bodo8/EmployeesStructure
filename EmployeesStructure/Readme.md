@@ -20,7 +20,7 @@ The application logic is in the EmployeeHierarchyService class, and its tests ar
 You can test the solution using Postman:
 
 Sample request:
-https://localhost:44367/hierarchy/GetSuperiorRowOfEmployee?employeeId=3&superiorId=1
+https://localhost:44367/api/GetSuperiorRowOfEmployee?employeeId=3&superiorId=1
 
 should return:
 employeeId	3

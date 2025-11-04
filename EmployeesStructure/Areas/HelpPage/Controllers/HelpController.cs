@@ -1,4 +1,5 @@
 using System;
+using System.Security.Cryptography;
 using System.Web.Http;
 using System.Web.Mvc;
 using EmployeesStructure.Areas.HelpPage.ModelDescriptions;
@@ -27,8 +28,11 @@ namespace EmployeesStructure.Areas.HelpPage.Controllers
 
         public ActionResult Index()
         {
-            ViewBag.DocumentationProvider = Configuration.Services.GetDocumentationProvider();
-            return View(Configuration.Services.GetApiExplorer().ApiDescriptions);
+            var config = GlobalConfiguration.Configuration;
+            ViewBag.DocumentationProvider = config.Services.GetDocumentationProvider();
+            var apiDescriptions = config.Services.GetApiExplorer().ApiDescriptions;
+
+            return View(apiDescriptions);
         }
 
         public ActionResult Api(string apiId)

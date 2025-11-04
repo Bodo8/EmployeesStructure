@@ -25,5 +25,13 @@ namespace EmployeesStructure.Models
         {
             Subordinates = new List<Employee>();
         }
+
+        public ICollection<Vacation> Vacations { get; set; } = new List<Vacation>();
+
+        public int TeamId { get; set; }
+        public virtual Team Team { get; set; }
+
+        public int VacationPackageId { get; set; }
+        public virtual VacationPackage VacationPackage { get; set; }
     }
 }
