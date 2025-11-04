@@ -52,6 +52,7 @@ namespace EmployeesStructure
             container.RegisterType(typeof(IVacationRepository), typeof(VacationRepository));
             container.RegisterType(typeof(IEmployeeHierarchyService), typeof(EmployeeHierarchyService));
             container.RegisterType(typeof(IEmployeeVacationService), typeof(EmployeeVacationService));
+            container.RegisterType(typeof(ICalendarRepository), typeof(CalendarRepository) );
         }
     }
 }

@@ -191,7 +191,9 @@
     <Compile Include="Controllers\EmployeeController.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Data\DbInitializer.cs" />
+    <Compile Include="Data\Repositories\CalendarRepository.cs" />
     <Compile Include="Data\Repositories\EmployeeRepository.cs" />
+    <Compile Include="Data\Repositories\ICalendarRepository.cs" />
     <Compile Include="Data\Repositories\IEmployeeRepository.cs" />
     <Compile Include="Data\Repositories\IRepository.cs" />
     <Compile Include="Data\Repositories\IVacationRepository.cs" />
@@ -220,6 +222,10 @@
     <Compile Include="Migrations\202511030903136_AddCalendar.cs" />
     <Compile Include="Migrations\202511030903136_AddCalendar.Designer.cs">
       <DependentUpon>202511030903136_AddCalendar.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\202511041100384_UpdateVacationDataSince.cs" />
+    <Compile Include="Migrations\202511041100384_UpdateVacationDataSince.Designer.cs">
+      <DependentUpon>202511041100384_UpdateVacationDataSince.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\Calendar.cs" />
@@ -391,6 +397,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202511030903136_AddCalendar.resx">
       <DependentUpon>202511030903136_AddCalendar.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202511041100384_UpdateVacationDataSince.resx">
+      <DependentUpon>202511041100384_UpdateVacationDataSince.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <PropertyGroup>

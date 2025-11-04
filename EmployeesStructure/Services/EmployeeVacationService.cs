@@ -8,9 +8,9 @@ namespace EmployeesStructure.Services
 {
     public class EmployeeVacationService : IEmployeeVacationService
     {
-        private readonly IRepository<Calendar> _calendarRepository;
+        private readonly ICalendarRepository _calendarRepository;
 
-        public EmployeeVacationService(IRepository<Calendar> calendarRepository)
+        public EmployeeVacationService(ICalendarRepository calendarRepository)
         {
             _calendarRepository = calendarRepository;
         }
@@ -32,11 +32,12 @@ namespace EmployeesStructure.Services
             DateTime today = DateTime.Today;
             var yearStart = new DateTime(today.Year, 1, 1);
             int usedDays = 0;
+            var calendars = _calendarRepository.GetAllForYear(today.Year).ToList();
 
             foreach (var vacation in vacations)
             {
-                usedDays += _calendarRepository.GetAll()
-                    .Count(c => c.Date >= vacation.DateSience
+                usedDays += calendars
+                    .Count(c => c.Date >= vacation.DateSince
                              && c.Date <= vacation.DateUntil
                              && c.Date >= yearStart
                              && !c.IsWeekend

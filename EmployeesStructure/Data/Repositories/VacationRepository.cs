@@ -20,7 +20,7 @@ namespace EmployeesStructure.Data.Repositories
 
             var vacations = _dbSet
                 .Where(v => v.EmployeeId == employeeId
-                    && v.DateSience < today
+                    && v.DateSince < today
                     && (
                     (v.DateUntil >= yearStart
                     && v.DateUntil < yearEnd)

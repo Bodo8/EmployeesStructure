@@ -12,13 +12,13 @@ namespace EmployeesStructure.Tests.Services
     [TestClass]
     public class EmployeeVacationServiceTests
     {
-        private Mock<IRepository<Calendar>> _calendarRepositoryMock;
+        private Mock<ICalendarRepository> _calendarRepositoryMock;
         private EmployeeVacationService _service;
 
         [TestInitialize]
         public void Setup()
         {
-            _calendarRepositoryMock = new Mock<IRepository<Calendar>>();
+            _calendarRepositoryMock = new Mock<ICalendarRepository>();
             _service = new EmployeeVacationService(_calendarRepositoryMock.Object);
         }
 
@@ -109,14 +109,47 @@ namespace EmployeesStructure.Tests.Services
                 CreateVacation (startDate2, new DateTime(year, 4, 7), employeeId), // 7 dni
             };
 
-            SetupCalendarMock(6, startDate);
-            SetupCalendarMock(7, startDate2);
+            var calendarDays = GenerateCalendarDays(6, startDate);
+            calendarDays.AddRange(GenerateCalendarDays(7, startDate2));
+
+            _calendarRepositoryMock.Setup(x => x.GetAllForYear(year)).Returns(calendarDays.AsQueryable());
 
             // Act
             var result = _service.IfEmployeeCanRequestVacation(employee, vacations, vacationPackage);
 
             // Assert
             Assert.IsTrue(result, "Pracownik powinien mieć jeszcze wolne dni");
+        }
+
+        [TestMethod]
+        public void employee_with_multiple_vacations_should_return_17()
+        {
+            // Arrange
+            var employeeId = 1;
+            var employee = new Employee { Id = employeeId, Name = "Maria Lewandowska" };
+            var vacationPackage = new VacationPackage { GrantedDays = 26 };
+            var year = DateTime.Now.Year;
+            var startDate = new DateTime(year - 1, 12, 24);
+            var startDate2 = new DateTime(year, 12, 26);
+
+            var vacations = new List<Vacation>
+            {
+                CreateVacation (startDate, new DateTime(year, 1, 3), employeeId), // 11 dni tylko 3 w roku 2025
+                CreateVacation (startDate2, new DateTime(year + 1, 1, 8), employeeId), // 12 dni tylko 6 w roku 2025
+            };
+            var calendarDays = GenerateCalendarDays(11, startDate);
+            calendarDays.AddRange(GenerateCalendarDays(12, startDate2));
+            calendarDays = calendarDays
+                .Where(d => d.Date.Year == year)
+                .ToList();
+
+            _calendarRepositoryMock.Setup(x => x.GetAllForYear(year)).Returns(calendarDays.AsQueryable());
+
+            // Act
+            var result = _service.CountFreeDaysForEmployee(employee, vacations, vacationPackage);
+
+            // Assert
+            Assert.AreEqual(17, result, "Pracownik powinien mieć jeszcze 13 wolnych dni");
         }
 
 
@@ -141,7 +174,7 @@ namespace EmployeesStructure.Tests.Services
         {
             return new Vacation
             {
-                DateSience = dateFrom,
+                DateSince = dateFrom,
                 DateUntil = dateTo,
                 EmployeeId = employeeId
             };
@@ -152,7 +185,7 @@ namespace EmployeesStructure.Tests.Services
             var calendarDays = GenerateCalendarDays(workingDaysCount, startDate);
 
             _calendarRepositoryMock
-                .Setup(x => x.GetAll())
+                .Setup(x => x.GetAllForYear(startDate.Year))
                 .Returns(calendarDays.AsQueryable());
         }
 

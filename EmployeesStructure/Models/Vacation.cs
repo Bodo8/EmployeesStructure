@@ -9,7 +9,7 @@ namespace EmployeesStructure.Models
         [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int Id { get; set; }
-        public DateTime DateSience { get; set; }
+        public DateTime DateSince { get; set; }
         public DateTime DateUntil { get; set; }
 
         public int EmployeeId { get; set; }
